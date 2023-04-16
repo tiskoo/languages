@@ -4,12 +4,11 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 
 <meta name="dc:creator" content="Rangoo" />
-<meta name="dc:title" content="Word Order" />
 
 
 
 <title>
-Word Order
+
 </title>
 
 <!-- Made with executable version 7.0 Release 3 Build 0 -->
@@ -32,15 +31,15 @@ Word Order
 
 /* CSS variables for colours. */
 :root{
-	--strFontFace:       arial,helvetica,sans-serif;
-	--strFontSize:       small;
+	--strFontFace:       Geneva,Arial,sans-serif;
+	--strFontSize:       medium;
 	--strTextColor:      #ffffff;
 	--strTitleColor:     #ffffff;
 
 	--strFuncLightColor: #7f9f7f;
 	--strFuncShadeColor: #002000;
 	--strLinkColor:      #ffffff;
-	--strVLinkColor:     #ffff00;
+	--strVLinkColor:     #ffff80;
 	
 	--strNavBarColor:    #004000;
 	--strNavLightColor:  #7f9f7f;
@@ -949,141 +948,301 @@ function ClearTextBoxes(){
 
 
 
+function Card(ID, OverlapTolerance){
+	this.elm=document.getElementById(ID);
+	this.name=ID;
+	this.css=this.elm.style;
+	this.elm.style.left = 0 +'px';
+	this.elm.style.top = 0 +'px';
+	this.HomeL = 0;
+	this.HomeT = 0;
+	this.tag=-1;
+	this.index=-1;
+	this.OverlapTolerance = OverlapTolerance;
+}
 
-//JMIX STANDARD OUTPUT FORMAT CODE
+function CardGetL(){return parseInt(this.css.left)}
+Card.prototype.GetL=CardGetL;
 
-var CorrectResponse = 'Correct!';
-var IncorrectResponse = 'Sorry! Try again.';
-var TheseAnswersToo = 'These answers are also correct:';
-var ThisMuchCorrect = 'This much of your answer is correct:';
-var NextCorrect = 'The next correct part is: ';
-var YourScoreIs = '';
-var CapitalizeFirst = false;
-var Penalties = 0;
-var Finished = false;
-var TimeOver = false;
-var Score = 0;
-var strInstructions = '';
-var AnswersTried = '';
+function CardGetT(){return parseInt(this.css.top)}
+Card.prototype.GetT=CardGetT;
+
+function CardGetW(){return parseInt(this.elm.offsetWidth)}
+Card.prototype.GetW=CardGetW;
+
+function CardGetH(){return parseInt(this.elm.offsetHeight)}
+Card.prototype.GetH=CardGetH;
+
+function CardGetB(){return this.GetT()+this.GetH()}
+Card.prototype.GetB=CardGetB;
+
+function CardGetR(){return this.GetL()+this.GetW()}
+Card.prototype.GetR=CardGetR;
+
+function CardSetL(NewL){this.css.left = NewL+'px'}
+Card.prototype.SetL=CardSetL;
+
+function CardSetT(NewT){this.css.top = NewT+'px'}
+Card.prototype.SetT=CardSetT;
+
+function CardSetW(NewW){this.css.width = NewW+'px'}
+Card.prototype.SetW=CardSetW;
+
+function CardSetH(NewH){this.css.height = NewH+'px'}
+Card.prototype.SetH=CardSetH;
+
+function CardInside(X,Y){
+	var Result=false;
+	if(X>=this.GetL()){if(X<=this.GetR()){if(Y>=this.GetT()){if(Y<=this.GetB()){Result=true;}}}}
+	return Result;
+}
+Card.prototype.Inside=CardInside;
+
+function CardSwapColours(){
+	var c=this.css.backgroundColor;
+	this.css.backgroundColor=this.css.color;
+	this.css.color=c;
+}
+Card.prototype.SwapColours=CardSwapColours;
+
+function CardHighlight(){
+	this.css.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--strTextColor');
+	this.css.color = getComputedStyle(document.documentElement).getPropertyValue('--strExBGColor');;
+}
+Card.prototype.Highlight=CardHighlight;
+
+function CardUnhighlight(){
+	this.css.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--strExBGColor');
+	this.css.color = getComputedStyle(document.documentElement).getPropertyValue('--strTextColor');
+}
+Card.prototype.Unhighlight=CardUnhighlight;
+
+function CardOverlap(OtherCard){
+	var smR=(this.GetR()<(OtherCard.GetR()+this.OverlapTolerance))? this.GetR(): (OtherCard.GetR()+this.OverlapTolerance);
+	var lgL=(this.GetL()>OtherCard.GetL())? this.GetL(): OtherCard.GetL();
+	var HDim=smR-lgL;
+	if (HDim<1){return 0;}
+	var smB=(this.GetB()<OtherCard.GetB())? this.GetB(): OtherCard.GetB();
+	var lgT=(this.GetT()>OtherCard.GetT())? this.GetT(): OtherCard.GetT();
+	var VDim=smB-lgT;
+	if (VDim<1){return 0;}
+	return (HDim*VDim);	
+}
+Card.prototype.Overlap=CardOverlap;
+
+//Change for version 7: centre vertically on the docked card.
+function CardDockToR(OtherCard){
+	this.SetL(OtherCard.GetR() + 5);
+	var NewT = Math.floor(Math.max(((OtherCard.GetH() - this.GetH()) / 2) + OtherCard.GetT()), OtherCard.GetT());
+	this.SetT(NewT);
+}
+
+Card.prototype.DockToR=CardDockToR;
+
+function CardSetHome(){
+	this.HomeL=this.GetL();
+	this.HomeT=this.GetT();
+}
+Card.prototype.SetHome=CardSetHome;
+
+function CardGoHome(){
+	this.SetL(this.HomeL);
+	this.SetT(this.HomeT);
+}
+
+Card.prototype.GoHome=CardGoHome;
+
+//Fix for 6.2.5.2: avoid image dragging problem in draggable cards
+function CardSetHTML(HTML){
+	this.elm.innerHTML = HTML;
+	var DragImgs = this.elm.getElementsByTagName('img');
+	if (DragImgs.length > 0){
+		for (var i=0; i<DragImgs.length; i++){
+			DragImgs[i].addEventListener('onmousedown', function(e){return false;});
+		}
+	}
+}
+
+Card.prototype.SetHTML = CardSetHTML;
+
+var CurrDrag = -1;
+var topZ = 100;
 
 
-var SegmentTemplate = '&#160; &#160;<a class="ExSegment" href="javascript:void(0)" onclick="AddSegment([SegmentNumber])" title="Click on words to add them to the sentence.">[CurrentSegment]</a>&#160; &#160;';
 
-var Exercise = '';
+
+
+//JMIX DRAG-DROP OUTPUT FORMAT CODE
+
+//Work around Safari bug
+var scrollable = true;
+
+var listener = function(e) {
+    if (! scrollable) {
+        e.preventDefault();
+    }
+}
 
 var Punctuation = '\u002F\u002E';
 
 var Openers = '';
+var CorrectResponse = 'Correct!';
+var IncorrectResponse = 'Sorry! Try again.';
+var ThisMuchCorrect = 'This much of your answer is correct:';
+var TheseAnswersToo = 'These answers are also correct:';
+var YourScoreIs = '';
+var NextCorrect = 'The next correct part is: ';
+var FeedbackWidth = 200; //default
+var ExBGColor = getComputedStyle(document.documentElement).getPropertyValue('--strExBGColor');
+var PageBGColor = getComputedStyle(document.documentElement).getPropertyValue('--strPageBGColor');
+var TextColor = getComputedStyle(document.documentElement).getPropertyValue('--strTextColor');
+var TitleColor = getComputedStyle(document.documentElement).getPropertyValue('--strTitleColor');
+var DropTotal = 3; // number of lines that will be available for dropping on
+var Gap = 4; //Gap between two segments when they're next to each other on a line
+var DropHeight = 30;
+var CapitalizeFirst = false;
+var CompiledOutput = '';
+var TempSegment = '';
+var FirstSegment = -1;
+var FirstDiv = -1;
+var Penalties = 0;
+var Score = 0;
+var TimeOver = false;
 
-var Guesses = new Array();
-var Remaining = new Array();
-var CorrectParts = new Array();
+var CurrDrag = -1;
+var topZ = 100;
+//Cards and lines on which to drop them.
+var DC = new Array();
+var L = new Array();
+var Finished = false;
 
-var ClosestMatch = 0;
+var Locked = false;
+var DragTop = 120;
+var DragNumber = -1;
+var AnswersTried = '';
 
-var LowerString='';
-var UpperString='';
+Lines = new Array();
 
-var Output = '';
-
-var Segments = new Array();
-Segments[0] = new Array();
-Segments[0][0] = '\u0C1A\u0C3F\u0C28\u0C4D\u0C28\u0C2A\u0C4D\u0C2A\u0C41\u0C21\u0C41\u0020\u002F\u0063\u0068\u0069\u006E\u006E\u0061\u0070\u0070\u0075\u0064\u0075\u002F';
-Segments[0][1] = 2;
-Segments[0][2] = 0;
-Segments[1] = new Array();
-Segments[1][0] = '\u0C35\u0C3E\u0C33\u0C4D\u0C33\u0C2E\u0C41\u0020\u002F\u0076\u0061\u0061\u006C\u006C\u0061\u006D\u0075\u002F';
-Segments[1][1] = 6;
-Segments[1][2] = 0;
-Segments[2] = new Array();
-Segments[2][0] = '\u0C35\u0C4D\u0C30\u0C3E\u0C38\u0C47\u0020\u002F\u0076\u0072\u0061\u0061\u0073\u0065\u002F';
-Segments[2][1] = 5;
-Segments[2][2] = 0;
-Segments[3] = new Array();
-Segments[3][0] = '\u0C2E\u0C40\u0C26\u0C3E\u0020\u002F\u006D\u0065\u0065\u0064\u0061\u0061\u002F';
-Segments[3][1] = 4;
-Segments[3][2] = 0;
-Segments[4] = new Array();
-Segments[4][0] = '\u0C2A\u0C3E\u0C32\u0C15\u0020\u002F\u0070\u0061\u006C\u0061\u006B\u0061\u002F';
-Segments[4][1] = 3;
-Segments[4][2] = 0;
-Segments[5] = new Array();
-Segments[5][0] = '\u0C2E\u0C47\u0C2E\u0C41\u0020\u002F\u006D\u0065\u006D\u0075\u002F';
-Segments[5][1] = 1;
-Segments[5][2] = 0;
-Segments[6] = new Array();
-Segments[6][0] = '\u002E';
-Segments[6][1] = 7;
-Segments[6][2] = 0;
-
-
-var GuessSequence = new Array();
-
-var Answers = new Array();
-Answers[0] = new Array(1,2,3,4,5,6,7);
-
-
-function WriteToGuess(Feedback) {
-	document.getElementById('GuessDiv').innerHTML = Feedback;
-
-}
-
-function Undo(){
-	if (GuessSequence.length < 1){
-		return;
-	}
-	GuessSequence.length = GuessSequence.length - 1;
-	BuildCurrGuess();
-	BuildExercise();
-	DisplayExercise(Exercise);
-//Following line modified for 6.0.4.44 -- "remaining words" message removed, no longer needed
-	WriteToGuess('<span class="Answer">' + Output + '</span>');
-}
-
-function AddSegment(SegNum){
-
-	GuessSequence[GuessSequence.length] = SegNum;
-	BuildCurrGuess();
-	WriteToGuess('<span class="Answer">' + Output + '</span>');
-	BuildExercise();
-	DisplayExercise(Exercise);
-}
-
-function BuildCurrGuess(){
-
+function CapFirst(InString){
 	var i = 0;
-	var j = 0;
-	var NewSeg = '';
+	if ((Openers.indexOf(InString.charAt(i))>-1)||(InString.charAt(i) == ' ')){
+		i++;
+	}
+	if ((Openers.indexOf(InString.charAt(i))>-1)||(InString.charAt(i) == ' ')){
+		i++;
+	}
+	var Temp = InString.charAt(i);
+	Temp = Temp.toUpperCase();
+	InString = InString.substring(0, i) + Temp + InString.substring(i+1, InString.length);
+	return InString;
+}
 
-//first, create arrays of all the segments guessed so far and those not yet used
-	GuessSegs = new Array();
-	GuessSegs.length = 0;
+function CheckResults(ChkType){
+//Get sequence student has chosen
+	GetGuessSequence();
 
-//set the "used" markers all to 0
-	for (i=0; i<Segments.length; i++){
-		Segments[i][2] = 0;
+//Compile the answer
+	CompiledOutput = CompileString(GuessSequence);
+
+//Check the answer
+	CheckAnswer(ChkType);
+}
+
+function GetGuessSequence(){
+//Put pointers to draggables in arrays based on the lines they're sitting on
+	var Drops = new Array();
+	for (var i=0; i<L.length; i++){
+		Drops[i] = new Array();
 	}
 
-	for (i=0; i<GuessSequence.length; i++){
-		for (j=0; j<Segments.length; j++){
-			if ((Segments[j][1] == GuessSequence[i])&&(Segments[j][2] == 0)){
-				GuessSegs[GuessSegs.length] = Segments[j][0];
-				Segments[j][2] = 1;
-				break;
+	var CardPos = 0;
+	
+	for (i=0; i<DC.length; i++){
+		for (var j=0; j<L.length; j++){
+//Slight modification for 6.0.4: allow some leeway for 1px inaccuracy in card placing by browser.
+			CardPos = L[j].GetB() - (DC[i].GetH()+2);
+			if (((DC[i].GetT() - CardPos) < 4)&&((DC[i].GetT() - CardPos) > -4)){
+				Drops[j][Drops[j].length] = DC[i];
 			}
 		}
 	}
 
-//Create the list of unused segments
-	RemainingList = '';
-	for (i=0; i<Segments.length; i++){
-		if (Segments[i][2] == 0){
-			RemainingList += Segments[i][0] + '&#160; &#160;&#160;';
+//Sort the drop arrays based on the Left of each div
+	for (i=0; i<Drops.length; i++){
+		Drops[i].sort(CompDrags);
+	}
+
+//Put the tags into the GuessSequence array
+	GuessSequence.length = 0;
+	for (i=0; i<Drops.length; i++){
+		for (j=0; j<Drops[i].length; j++){
+			GuessSequence[GuessSequence.length] = Drops[i][j].tag;
 		}
 	}
-	
-//now concatenate the segments, adding spaces where appropriate;
-	Output = CompileString(GuessSequence);
+
+//Set the variable recording which div is first
+	var NewFirstDiv = -1;
+	for (i=0; i<Drops.length; i++){
+		if (Drops[i].length > 0){
+			NewFirstDiv = Drops[i][0].index;
+			break;
+		}
+	}
+	return NewFirstDiv;
+}
+
+function CompDrags(a,b){
+	return a.GetL() - b.GetL(); 
+}
+
+function RestoreGuessSequence(){
+//TODO: This function will restore the sequence
+//of dropped items following a window resize, which
+//requires that everything be laid out again.
+	var LastTop   = 0;
+	var LastRight = 0;
+	var LastDrop  = 0;
+	var LastDropLine = document.getElementById('Drop0');
+	for (var i=0; i<GuessSequence.length; i++){
+		for (var j=0; j<DC.length; j++){
+			if (DC[j].tag == GuessSequence[i]){
+				if (i == 0){
+//It's the first card.			
+					DC[j].SetL(LastDropLine.offsetLeft);
+					DC[j].SetT(LastDropLine.offsetTop);	
+					LastTop = LastDropLine.offsetTop;
+					LastRight = DC[j].GetR();
+				}
+				else{
+					DC[j].SetT(LastTop);
+					DC[j].SetL(LastRight + 4);
+					LastRight = DC[j].GetR();
+					if (LastRight > (LastDropLine.offsetLeft + LastDropLine.offsetWidth)){
+						LastDrop++;
+						LastDropLine = document.getElementById('Drop' + LastDrop);
+						if (LastDropLine !== null){
+							DC[j].SetL(LastDropLine.offsetLeft);
+							DC[j].SetT(LastDropLine.offsetTop);
+							LastTop = DC[j].GetT();
+							LastRight = DC[j].GetR();
+						}
+					}
+				}
+			}
+		}
+	}
+	CheckOver(-1);
+}
+
+function FindSegment(SegID){
+	var Seg = '';
+	for (var i=0; i<Segments.length; i++){
+		if (Segments[i][1] == SegID){
+			Seg = Segments[i][0];
+			break;
+		}
+	}
+	return Seg;
 }
 
 function CompileString(InArray){
@@ -1113,29 +1272,20 @@ function CompileString(InArray){
 
 //Capitalize the first letter if necessary
 	if (CapitalizeFirst == true){
-		i = 0;
-		if ((Openers.indexOf(OutString.charAt(i))>-1)||(OutString.charAt(i) == ' ')){
-			i++;
-		}
-		if ((Openers.indexOf(OutString.charAt(i))>-1)||(OutString.charAt(i) == ' ')){
-			i++;
-		}
-		var Temp = OutString.charAt(i);
-		Temp = Temp.toUpperCase();
-		OutString = OutString.substring(0, i) + Temp + OutString.substring(i+1, OutString.length);
+		OutString = CapFirst(OutString);
 	}
 	return OutString;
 }
-function CheckAnswer(CheckType){
 
+function CheckAnswer(CheckType){
+	if (Locked == true){return;}
 	if (GuessSequence.length < 1){
 		if (CheckType == 1){
-			ShowMessage(NextCorrect + '<br /><span class="Answer">' + FindSegment(Answers[0][0]) + '</span>');
 			Penalties++;
+			ShowMessage(NextCorrect + '<br /><br />' + FindSegment(Answers[0][0]));
 		}
 		return;
 	}
-
 	var i = 0;
 	var j = 0;
 	var k = 0;
@@ -1162,7 +1312,6 @@ function CheckAnswer(CheckType){
 			}
 		}
 		if ((TempCorrect.length == GuessSequence.length)&&(TempCorrect.length == Answers[i].length)){
-
 			WhichCorrect = i;
 			break;
 		}
@@ -1183,61 +1332,49 @@ function CheckAnswer(CheckType){
 				OtherAnswers += '<br />' + CompileString(Answers[i]);
 			}
 		}
-
-		WellDone = '<span class="Answer">' + Output + '</span><br /><br />' + CorrectResponse + '<br />';
-
-		if (AnswersTried.length > 0){AnswersTried += ' | ';}
-		AnswersTried += Output;
+		WellDone = '<span class="CorrectAnswer">' + CompiledOutput + '</span><br /><br />' + CorrectResponse + '<br />';
 		
+		if (AnswersTried.length > 0){AnswersTried += ' | ';}
+		AnswersTried += CompiledOutput;
+
 //Do score calculation here
 		Score = Math.floor(((Segments.length-Penalties) * 100)/Segments.length);
+		WellDone += YourScoreIs + ' ' + Score + '%.<br />';
 
 
 		if (OtherAnswers.length > 0){
-			WellDone += TheseAnswersToo + '<span class="Answer">' + OtherAnswers + '</span>';
+			WellDone += TheseAnswersToo + '<span class="CorrectAnswer">' + OtherAnswers + '</span>';
 		}
 
 
-		WriteToGuess(WellDone);
-		ShowMessage(WellDone + '<br />' + YourScoreIs + ' ' + Score + '%.');
+		ShowMessage(WellDone);
+		WriteToInstructions(YourScoreIs + ' ' + Score + '%.');
 	}
 
 	else{
 		var WrongGuess = CompileString(GuessSequence);
 		if (AnswersTried.length > 0){AnswersTried += ' | ';}
 		AnswersTried += WrongGuess;
-		TryAgain = '<span class="Answer">' + WrongGuess + '</span><br /><br />';
-		if (CheckType == 0){
+		TryAgain = '<span class="Guess">' + WrongGuess + '</span><br /><br />';
+		if ((CheckType == 0)||(LongestCorrect.length==0)){
 			TryAgain += IncorrectResponse + '<br />';
 		}
 
 		if (LongestCorrect.length > 0){
-
 			LongestCorrectBit = CompileString(LongestCorrect);
 			GuessSequence.length = LongestCorrect.length;
-			TryAgain += ThisMuchCorrect + '<br /><span class="Answer">' + LongestCorrectBit + '</span><br />';
-
-//These lines added for 6.0.3.44
-			WriteToGuess('<span class="Answer">' + LongestCorrectBit + '</span>');
-		}
-		else{
-			GuessSequence.length = 0;
-			WriteToGuess('');
+			TryAgain += '<br />' + ThisMuchCorrect + '<br /><span class="Guess">' + LongestCorrectBit + '</span><br />';
 		}
 
 		if (CheckType == 1){
-			TryAgain += NextCorrect + '<br /><span class="Answer">' + FindSegment(HintToReturn) + '</span>';
+			TryAgain += '<br />' + NextCorrect + '<br />' + FindSegment(HintToReturn);
 		}
-
-		BuildCurrGuess();
-		BuildExercise();
-		DisplayExercise(Exercise);
-		ShowMessage(TryAgain);
-		Penalties++; //Penalty for inaccurate check
 		
 
-
+		Penalties++; //Penalty for inaccurate check
+		ShowMessage(TryAgain);
 	}
+	
 //If the exercise is over, deal with that
 	if ((AllDone == true)||(TimeOver == true)){
 
@@ -1247,65 +1384,363 @@ function CheckAnswer(CheckType){
 		Finished = true;
 		WriteToInstructions(YourScoreIs + ' ' + Score + '%.'); 
 	}
+	
 
 }
 
-function FindSegment(SegID){
-	var Seg = '';
-	for (var i=0; i<Segments.length; i++){
-		if (Segments[i][1] == SegID){
-			Seg = Segments[i][0];
-			break;
+
+var Segments = new Array();
+Segments[0] = new Array();
+Segments[0][0] = '\u0C38\u0C40\u0C24\u0C3E\u0C2B\u0C32\u0C2E\u0C41\u0020\u002F\u0073\u0065\u0065\u0074\u0061\u0070\u0068\u0061\u006C\u0061\u006D\u0075\u002F';
+Segments[0][1] = 2;
+Segments[0][2] = 0;
+Segments[1] = new Array();
+Segments[1][0] = '\u0C07\u0C37\u0C4D\u0C1F\u0C2E\u0C41\u0020\u002F\u0069\u0073\u0068\u0074\u0061\u006D\u0075\u002F';
+Segments[1][1] = 5;
+Segments[1][2] = 0;
+Segments[2] = new Array();
+Segments[2][0] = '\u0C1A\u0C3E\u0C32\u0C3E\u0020\u002F\u0063\u0068\u0061\u0061\u006C\u0061\u0061\u002F';
+Segments[2][1] = 4;
+Segments[2][2] = 0;
+Segments[3] = new Array();
+Segments[3][0] = '\u0C28\u0C3E\u0C15\u0C41\u0020\u002F\u006E\u0061\u0061\u006B\u0075\u002F';
+Segments[3][1] = 1;
+Segments[3][2] = 0;
+Segments[4] = new Array();
+Segments[4][0] = '\u0C05\u0C02\u0C1F\u0C47\u0020\u002F\u0061\u006E\u0074\u0065\u002F';
+Segments[4][1] = 3;
+Segments[4][2] = 0;
+Segments[5] = new Array();
+Segments[5][0] = '\u002E';
+Segments[5][1] = 6;
+Segments[5][2] = 0;
+
+
+var GuessSequence = new Array();
+
+var Answers = new Array();
+Answers[0] = new Array(1,2,3,4,5,6);
+
+
+function doDrag(e) {
+	if (CurrDrag == -1) {return};
+	var currX, currY;
+	var difX, difY;
+	if (e.touches){
+		currX = e.touches[0].clientX;
+		currY = e.touches[0].clientY;
+	}
+	else{
+		currX = e.clientX;
+		currY = e.clientY; 
+	}
+	
+	difX = currX - window.lastX; 
+	difY = currY - window.lastY;
+	var newX = DC[CurrDrag].GetL()+difX; 
+	var newY = DC[CurrDrag].GetT()+difY; 
+	DC[CurrDrag].SetL(newX); 
+	DC[CurrDrag].SetT(newY);
+	window.lastX = currX; 
+	window.lastY = currY; 
+	return false;
+} 
+
+var moveFunc = function(e){e.preventDefault(); doDrag(e);};
+var endFunc = function(e){e.preventDefault(); endDrag(e);};
+
+function beginDrag(e, DragNum) { 
+	scrollable = false;
+	CurrDrag = DragNum;
+
+	window.addEventListener('mousemove', moveFunc);
+	window.addEventListener('mouseup', endFunc);
+	window.addEventListener('touchmove', moveFunc);
+	window.addEventListener('touchend', endFunc);
+
+	var currX, currY;
+	if (e.touches){
+		currX = e.touches[0].clientX;
+		currY = e.touches[0].clientY;
+	}
+	else{
+		currX = e.clientX;
+		currY = e.clientY; 
+	}
+
+	DC[CurrDrag].Highlight();
+	topZ++;
+	DC[CurrDrag].css.zIndex = topZ;
+	window.lastX = currX; 
+	window.lastY = currY;
+	return false;  
+}  
+
+function endDrag(e) { 
+	if (CurrDrag == -1) {return};
+	DC[CurrDrag].Unhighlight();
+	window.removeEventListener('mousemove', moveFunc);
+	window.removeEventListener('touchmove', moveFunc);
+	window.removeEventListener('mouseup', endFunc);
+	window.removeEventListener('touchend', endFunc);
+	onEndDrag();	
+	CurrDrag = -1;
+	scrollable = true;
+	return true;
+} 
+
+function onEndDrag(){
+//Snap to lines
+	var i = 0;
+	var SnapLine = DC[CurrDrag].GetT();
+	var BiggestOverlap = -1;
+	var OverlapRect = 0;
+	for (i=0; i<L.length; i++){
+		if (DC[CurrDrag].Overlap(L[i]) > OverlapRect){
+			OverlapRect = DC[CurrDrag].Overlap(L[i]);
+			BiggestOverlap = i;
 		}
 	}
-	return Seg;
+	if (BiggestOverlap > -1){
+		SnapLine = L[BiggestOverlap].GetB() - (DC[CurrDrag].GetH() + 2);
+		DC[CurrDrag].SetT(SnapLine);
+		CheckOver(-1);
+	}
+	if (CapitalizeFirst==true){
+		setTimeout('DoCapitalization()', 50);
+	}
+//Get the guess sequence every time so we can restore it
+//if the page is resized.
+	GetGuessSequence();
+}
+
+function DoCapitalization(){
+//Capitalize first segment if necessary
+	var FD = GetGuessSequence();
+	if ((FD == -1)&&(FirstDiv > -1)){
+		DC[FirstDiv].SetHTML(Segments[FirstDiv][0]);
+	}
+	if (((FD != FirstDiv)&&(CapitalizeFirst == true))&&(FD > -1)){
+		if (FirstDiv > -1){
+			DC[FirstDiv].SetHTML(Segments[FirstDiv][0]);
+		}
+	}
+	if ((FD > -1)&&(CapitalizeFirst == true)){
+		var Temp = CapFirst(Segments[FD][0]);
+		DC[FD].SetHTML(Temp);
+		FirstDiv = FD;
+	}
+}
+
+function CheckOver(NoMove){
+//This recursive function spreads out the Cards on a line if two of them are overlapping;
+//if the spread operation moves one beyond the end of a line, it wraps it to the next line.
+	var LeftBoundary = L[0].elm.offsetLeft;
+	var LineWidth = L[0].elm.offsetWidth;
+	for (var i=0; i<DC.length; i++){
+		for (var j=0; j<DC.length; j++){
+			if (i!=j){
+				if (DC[i].Overlap(DC[j]) > 0){
+					if ((i==NoMove)||(DC[i].GetL() < DC[j].GetL())){
+						DC[j].DockToR(DC[i]);
+						if (DC[j].GetR() > (LeftBoundary + LineWidth)){
+							DC[j].SetL(LeftBoundary);
+							DC[j].SetT(DC[j].GetT() + DropHeight);
+						}
+						CheckOver(j);
+					}
+					else{
+						DC[i].DockToR(DC[j]);
+						if (DC[i].GetR() > (LeftBoundary + LineWidth)){
+							DC[i].SetL(LeftBoundary);
+							DC[i].SetT(DC[i].GetT() + DropHeight);
+						}
+						CheckOver(i);	
+					}
+				}
+			}	
+		}
+	}
 }
 
 function StartUp(){
 
-//Stash the instructions so they can be redisplayed
-	strInstructions = document.getElementById('InstructionsDiv').innerHTML;
+
+
+
+
+
+
+//Create the drop lines and cards.
+	var ExDiv = document.querySelector('div.ExerciseContainer');
 	
+	var newLine = null;
+	var newCard = null;
+    for (var i=0; i<DropTotal; i++){
+		newLine = document.createElement('div');
+		newLine.setAttribute('id', 'Drop' + i);
+		newLine.setAttribute('class', 'DropLine');
+		newLine.appendChild(document.createElement('br'));
+		newLine.appendChild(document.createElement('br'));
+		ExDiv.appendChild(newLine);
+	}
 
-
-
-
-
+	for (var i=0; i<Segments.length; i++){
+		newCard = document.createElement('div');
+		newCard.setAttribute('id', 'D' + i);
+		newCard.setAttribute('dataNum', i);
+		newCard.setAttribute('class', 'CardStyle');
+		ExDiv.appendChild(newCard);
+		newCard.addEventListener('mousedown', function(e){beginDrag(e, this.getAttribute('dataNum'))}.bind(newCard));
+		newCard.addEventListener('touchstart', function(e){beginDrag(e, this.getAttribute('dataNum'))}.bind(newCard));
+	}
 
 	Segments = Shuffle(Segments);
 
-//Build and show the exercise
-	BuildExercise();
-	DisplayExercise(Exercise);	
+//Place them at the bottom of the page
+	SetInitialPositions();
 	
+//Allow for resizing
+	window.addEventListener('resize', function(){SetInitialPositions()});
+
 
 }
 
+function SetInitialPositions(){
+//This function lays out all the elements that are
+//positioned absolutely. It may be called every time
+//the page is resized.
 
-function BuildExercise(){
-	Exercise = '';
+	DragTop = parseInt(document.getElementById('CheckButtonDiv').offsetHeight) + parseInt(document.getElementById('CheckButtonDiv').offsetTop) + 10;
 
-	var SegRow = '';
-	var TempRow = '';
+	var ExDiv = document.querySelector('div.ExerciseContainer');
 
-	for (var i=0; i<Segments.length; i++){
-//if the segment hasn't been used yet
-		if (Segments[i][2] == 0){
-			TempRow = SegmentTemplate;
-			TempRow = TempRow.replace(/\[SegmentNumber\]/g, Segments[i][1]);
-			TempRow = TempRow.replace(/\[CurrentSegment\]/g, Segments[i][0]);
-			SegRow += TempRow;
-		}
+//Get the default font size.
+	var FontSize = Math.round(parseFloat(getComputedStyle(ExDiv).fontSize));
+	
+	var ExDivLeft = ExDiv.offsetLeft;
+	var ExDivWidth = ExDiv.offsetWidth;
+	var Indent = Math.floor(ExDivWidth / 20);
+	var DropLineWidth = Math.floor((ExDivWidth * 9) / 10);
+
+	var CurrTop = DragTop + 10;
+
+//Position the drop divs
+	for (var i=0; i<DropTotal; i++){
+		L[i] = new Card('Drop' + i, 0);
+		L[i].SetT(CurrTop)
+		L[i].tag = CurrTop-5;
+		L[i].SetL(ExDivLeft + Indent);
+		L[i].SetW(DropLineWidth);
+		L[i].css.backgroundColor = PageBGColor;
+		CurrTop += L[i].GetH();
+		topZ++;
+		L[i].css.zIndex = topZ;
+	}
+	DropHeight = L[0].GetH();
+
+	CurrTop = DragTop;
+	var TempInt = 0;
+	var DropHome = 0;
+
+	for (i=0; i<Segments.length; i++){
+//Create a new pointer in the C array to ref the card div
+		DC[i] = new Card('D'+i, 0);
+		DC[i].elm.classList.add('CardStyleCentered');
+		DC[i].SetHTML(Segments[i][0]);
+		DC[i].SetT(CurrTop);
+		DC[i].SetL(-100);
+		DC[i].css.cursor = 'move';
+		TempInt = DC[i].GetH();
+		CurrTop = CurrTop + TempInt + 5;
+		DC[i].css.backgroundColor = ExBGColor;
+		DC[i].css.color = TextColor;
+		topZ++;
+		DC[i].css.zIndex = topZ;
+		DC[i].tag = Segments[i][1];
+		DC[i].index = i;
 	}
 
-//Make it into a table
-	Exercise = SegRow;
+//Places all the divs at the bottom of the exercise div in centred rows
+//First, get the vertical position of the first row
+	var RTop = L[L.length-1].GetB() + 10;
+
+//Create an array to hold the numbers of Cards for each row
+	CRows = new Array();
+	CRows[0] = new Array();
+	Widths = new Array();
+	var i=0;
+	var r=0;
+	var RowWidth=0;
+//Sort the Cards into rows, storing their numbers in the array
+
+	while (i<DC.length){
+//if it fits on this row, add it
+		if ((RowWidth + DC[i].GetW() + 5) < DropLineWidth){
+			CRows[r][CRows[r].length] = i;
+			RowWidth += DC[i].GetW() + 5;
+//Store the width in the Widths array for later
+			Widths[r] = RowWidth;
+		}
+//if not, increment the row number, and add it to the next row
+		else{
+			r++;
+			CRows[r] = new Array();
+			CRows[r][CRows[r].length] = i;
+			RowWidth = DC[i].GetW() + 5;
+//Store the width in the Widths array for later
+			Widths[r] = RowWidth;
+		}
+//move to the next Card
+		i++;
+	}
+//Now we have the numbers in rows, set out each row
+	r=0;
+	
+	for (r=0; r<CRows.length; r++){
+//Get the required extra indent for this row
+		ExtraIndent = Math.floor((DropLineWidth-Widths[r])/2);
+		
+//Set the first card in position
+		DC[CRows[r][0]].SetL(ExDivLeft + Indent + ExtraIndent);
+		DC[CRows[r][0]].SetT(RTop);
+		DC[CRows[r][0]].SetHome();
+		for (i=1; i<CRows[r].length; i++){
+			DC[CRows[r][i]].DockToR(DC[CRows[r][i-1]]);
+			DC[CRows[r][i]].SetHome();
+		}
+//Increment the row height
+		RTop += DC[0].GetH() + 5;
+	}
+	
+//Now we clone the top navbar to create a bottom
+//navbar, and position it.
+	var TopNav = document.getElementById('TopNavBar');
+	var ReadingDiv = document.getElementById('ReadingDiv');
+	
+	if (TopNav !== null){
+//First delete one if there is one.
+		var BottomNav = document.getElementById('BottomNavBar');
+		if (BottomNav === null){
+			BottomNav = document.getElementById('TopNavBar').cloneNode(true);
+			BottomNav.setAttribute('id', 'BottomNavBar');
+			BottomNav.style.position = 'absolute';
+			document.body.appendChild(BottomNav);
+		}
+		var LastCard = DC[CRows[CRows.length - 1][0]].elm;
+		var ReadingBottom = (ReadingDiv !== null)? ReadingDiv.offsetTop + ReadingDiv.offsetHeight : 0;
+		var LastCardBottom = LastCard.offsetTop + LastCard.offsetHeight;
+		BottomNav.style.top = (Math.max(ReadingBottom, LastCardBottom) + FontSize) + 'px';
+		BottomNav.style.width = document.getElementById('TopNavBar').offsetWidth + 'px';
+	}
+//Finally we restore any existing guess sequence, in case
+//this function has been triggered by a window resize.
+	RestoreGuessSequence();
+
 }
 
-function DisplayExercise(StuffToDisplay){
-	document.getElementById('SegmentDiv').innerHTML = StuffToDisplay;
-	FocusAButton();
-
+function TimerStartUp(){
+	setTimeout('StartUp()', 300);
 }
 
 
@@ -1321,26 +1756,24 @@ function DisplayExercise(StuffToDisplay){
 
 </script>
 
+</head> 
 
-</head>
-
-<body onload="StartUp()" id="TheBody" >
-
+<body onload="TimerStartUp()" id="TheBody" > 
 <!-- BeginTopNavButtons -->
 
 
 <div class="NavButtonBar" id="TopNavBar">
 
 
-<button class="NavButton" onclick="history.back(); return false;">&lt;=</button>
+<button class="NavButton" onclick="history.back(); return false;">Previous</button>
 
 
 
-<button class="NavButton" onclick="location='index.htm'; return false;"> Index </button>
+<button class="NavButton" onclick="location='https://www.want2learn.com/telugu/quiz-on-telugu-speaking-class'; return false;"> Want2Learn </button>
 
 
 
-<button class="NavButton" onclick="location='wordorder1.htm.htm'; return false;">=&gt;</button>
+<button class="NavButton" onclick="location='https://www.coursesuseek.com/wordorderba.htm'; return false;">Next</button>
 
 
 </div>
@@ -1350,7 +1783,7 @@ function DisplayExercise(StuffToDisplay){
 <!-- EndTopNavButtons -->
 
 <div class="Titles">
-	<h2 class="ExerciseTitle">Word Order</h2>
+	<h2 class="ExerciseTitle"></h2>
 
 	<h3 class="ExerciseSubtitle">Put the words in order and make a meaningful sentence.</h3>
 
@@ -1362,34 +1795,22 @@ function DisplayExercise(StuffToDisplay){
 	<div id="Instructions">Put the words in order to form a sentence. When you think your answer is correct, click on "Check" to check your answer. If you get stuck, click on "Hint" to find out the next correct part.</div>
 </div>
 
+
 <div id="ContainerDiv">
 
 
 
-<div class="ExerciseContainer">
-<div id="GuessDiv">
-&#160;
-</div>
+<div class="ExerciseContainer JMixDrag">
 
-<div id="MainDiv">
-
-<button id="CheckButton1" class="FuncButton" onclick="CheckAnswer(0)">&#160;Check&#160;</button>
-
-
-<button class="FuncButton" onclick="Undo()">&#160;Undo&#160;</button>
-
+<div id="CheckButtonDiv" class="StdDiv">
+<button id="CheckButton1" class="FuncButton" onclick="CheckResults(0)">&#160;Check&#160;</button>
 
 
 <button class="FuncButton" onclick="location.reload()">&#160;Restart&#160;</button>
 
 
 
-<button class="FuncButton" onclick="CheckAnswer(1)">&#160;Hint&#160;</button>
-
-
-<div id="SegmentDiv">
-
-</div>
+<button class="FuncButton" onclick="CheckResults(1)">&#160;Hint&#160;</button>
 
 </div>
 
@@ -1404,25 +1825,6 @@ function DisplayExercise(StuffToDisplay){
 
 <!-- BeginBottomNavButtons -->
 
-
-<div class="NavButtonBar" id="BottomNavBar">
-
-
-<button class="NavButton" onclick="history.back(); return false;">&lt;=</button>
-
-
-
-<button class="NavButton" onclick="location='index.htm'; return false;"> Index </button>
-
-
-
-<button class="NavButton" onclick="location='wordorder1.htm.htm'; return false;">=&gt;</button>
-
-
-</div>
-
-
-
 <!-- EndBottomNavButtons -->
 
 <!-- BeginSubmissionForm -->
@@ -1430,5 +1832,4 @@ function DisplayExercise(StuffToDisplay){
 <!-- EndSubmissionForm -->
 
 </body>
-
 </html>

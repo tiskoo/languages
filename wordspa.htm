@@ -31,15 +31,15 @@
 
 /* CSS variables for colours. */
 :root{
-	--strFontFace:       arial,helvetica,sans-serif;
-	--strFontSize:       small;
+	--strFontFace:       Geneva,Arial,sans-serif;
+	--strFontSize:       medium;
 	--strTextColor:      #ffffff;
 	--strTitleColor:     #ffffff;
 
 	--strFuncLightColor: #7f9f7f;
 	--strFuncShadeColor: #002000;
 	--strLinkColor:      #ffffff;
-	--strVLinkColor:     #ffff00;
+	--strVLinkColor:     #ffff80;
 	
 	--strNavBarColor:    #004000;
 	--strNavLightColor:  #7f9f7f;
@@ -953,7 +953,7 @@ function ClearTextBoxes(){
 //JQUIZ CORE JAVASCRIPT CODE
 
 var CurrQNum = 0;
-var CorrectIndicator = '&#x2714;';
+var CorrectIndicator = '?';
 var IncorrectIndicator = 'x';
 var YourScoreIs = '';
 
@@ -963,7 +963,7 @@ var ExerciseCompleted = 'You have completed the exercise.';
 var ShowCompletedSoFar = true;
 
 var ContinuousScoring = true;
-var CorrectFirstTime = 'Questions answered correctly first time: ';
+var CorrectFirstTime = 'Questions answered correctly the first time:';
 var ShowCorrectFirstTime = true;
 var ShuffleQs = false;
 var ShuffleAs = true;
@@ -1561,15 +1561,15 @@ function CheckFinished(){
 <div class="NavButtonBar" id="TopNavBar">
 
 
-<button class="NavButton" onclick="history.back(); return false;">&lt;=</button>
+<button class="NavButton" onclick="history.back(); return false;">Previous</button>
 
 
 
-<button class="NavButton" onclick="location='index.htm'; return false;"> Index </button>
+<button class="NavButton" onclick="location='https://www.want2learn.com/telugu/quiz-on-telugu-speaking-class'; return false;"> Want2Learn </button>
 
 
 
-<button class="NavButton" onclick="location='index.htm'; return false;">=&gt;</button>
+<button class="NavButton" onclick="location='https://www.coursesuseek.com/wordspa.htm'; return false;">Next</button>
 
 
 </div>
@@ -1605,11 +1605,11 @@ function CheckFinished(){
 </p>
 
 <div id="OneByOneReadout">
-<button id="PrevQButton" class="FuncButton" onclick="ChangeQ(-1); return false;">&lt;=</button>
+<button id="PrevQButton" class="FuncButton" onclick="ChangeQ(-1); return false;">Previous</button>
 
 <span id="QNumReadout" class="QNum">&#160;</span>
 
-<button id="NextQButton" class="FuncButton" onclick="ChangeQ(1); return false;">=&gt;</button>
+<button id="NextQButton" class="FuncButton" onclick="ChangeQ(1); return false;">Next</button>
 <br />
 </div>
 
@@ -1638,15 +1638,15 @@ function CheckFinished(){
 <div class="NavButtonBar" id="BottomNavBar">
 
 
-<button class="NavButton" onclick="history.back(); return false;">&lt;=</button>
+<button class="NavButton" onclick="history.back(); return false;">Previous</button>
 
 
 
-<button class="NavButton" onclick="location='index.htm'; return false;"> Index </button>
+<button class="NavButton" onclick="location='https://www.want2learn.com/telugu/quiz-on-telugu-speaking-class'; return false;"> Want2Learn </button>
 
 
 
-<button class="NavButton" onclick="location='index.htm'; return false;">=&gt;</button>
+<button class="NavButton" onclick="location='https://www.coursesuseek.com/wordspa.htm'; return false;">Next</button>
 
 
 </div>
