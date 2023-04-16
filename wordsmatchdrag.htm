@@ -4,11 +4,12 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 
 <meta name="dc:creator" content="Rangoo" />
+<meta name="dc:title" content="Match the words with their meanings." />
 
 
 
 <title>
-
+Match the words with their meanings.
 </title>
 
 <!-- Made with executable version 7.0 Release 3 Build 0 -->
@@ -31,7 +32,7 @@
 
 /* CSS variables for colours. */
 :root{
-	--strFontFace:       Geneva,Arial,sans-serif;
+	--strFontFace:       "Noto Sans Telugu",Geneva,Arial,sans-serif;
 	--strFontSize:       medium;
 	--strTextColor:      #ffffff;
 	--strTitleColor:     #ffffff;
@@ -948,131 +949,14 @@ function ClearTextBoxes(){
 
 
 
-function Card(ID, OverlapTolerance){
-	this.elm=document.getElementById(ID);
-	this.name=ID;
-	this.css=this.elm.style;
-	this.elm.style.left = 0 +'px';
-	this.elm.style.top = 0 +'px';
-	this.HomeL = 0;
-	this.HomeT = 0;
-	this.tag=-1;
-	this.index=-1;
-	this.OverlapTolerance = OverlapTolerance;
+//Polyfill for old Safari versions.
+if (window.NodeList && !NodeList.prototype.forEach) {
+    NodeList.prototype.forEach = Array.prototype.forEach;
 }
 
-function CardGetL(){return parseInt(this.css.left)}
-Card.prototype.GetL=CardGetL;
-
-function CardGetT(){return parseInt(this.css.top)}
-Card.prototype.GetT=CardGetT;
-
-function CardGetW(){return parseInt(this.elm.offsetWidth)}
-Card.prototype.GetW=CardGetW;
-
-function CardGetH(){return parseInt(this.elm.offsetHeight)}
-Card.prototype.GetH=CardGetH;
-
-function CardGetB(){return this.GetT()+this.GetH()}
-Card.prototype.GetB=CardGetB;
-
-function CardGetR(){return this.GetL()+this.GetW()}
-Card.prototype.GetR=CardGetR;
-
-function CardSetL(NewL){this.css.left = NewL+'px'}
-Card.prototype.SetL=CardSetL;
-
-function CardSetT(NewT){this.css.top = NewT+'px'}
-Card.prototype.SetT=CardSetT;
-
-function CardSetW(NewW){this.css.width = NewW+'px'}
-Card.prototype.SetW=CardSetW;
-
-function CardSetH(NewH){this.css.height = NewH+'px'}
-Card.prototype.SetH=CardSetH;
-
-function CardInside(X,Y){
-	var Result=false;
-	if(X>=this.GetL()){if(X<=this.GetR()){if(Y>=this.GetT()){if(Y<=this.GetB()){Result=true;}}}}
-	return Result;
-}
-Card.prototype.Inside=CardInside;
-
-function CardSwapColours(){
-	var c=this.css.backgroundColor;
-	this.css.backgroundColor=this.css.color;
-	this.css.color=c;
-}
-Card.prototype.SwapColours=CardSwapColours;
-
-function CardHighlight(){
-	this.css.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--strTextColor');
-	this.css.color = getComputedStyle(document.documentElement).getPropertyValue('--strExBGColor');;
-}
-Card.prototype.Highlight=CardHighlight;
-
-function CardUnhighlight(){
-	this.css.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--strExBGColor');
-	this.css.color = getComputedStyle(document.documentElement).getPropertyValue('--strTextColor');
-}
-Card.prototype.Unhighlight=CardUnhighlight;
-
-function CardOverlap(OtherCard){
-	var smR=(this.GetR()<(OtherCard.GetR()+this.OverlapTolerance))? this.GetR(): (OtherCard.GetR()+this.OverlapTolerance);
-	var lgL=(this.GetL()>OtherCard.GetL())? this.GetL(): OtherCard.GetL();
-	var HDim=smR-lgL;
-	if (HDim<1){return 0;}
-	var smB=(this.GetB()<OtherCard.GetB())? this.GetB(): OtherCard.GetB();
-	var lgT=(this.GetT()>OtherCard.GetT())? this.GetT(): OtherCard.GetT();
-	var VDim=smB-lgT;
-	if (VDim<1){return 0;}
-	return (HDim*VDim);	
-}
-Card.prototype.Overlap=CardOverlap;
-
-//Change for version 7: centre vertically on the docked card.
-function CardDockToR(OtherCard){
-	this.SetL(OtherCard.GetR() + 5);
-	var NewT = Math.floor(Math.max(((OtherCard.GetH() - this.GetH()) / 2) + OtherCard.GetT()), OtherCard.GetT());
-	this.SetT(NewT);
-}
-
-Card.prototype.DockToR=CardDockToR;
-
-function CardSetHome(){
-	this.HomeL=this.GetL();
-	this.HomeT=this.GetT();
-}
-Card.prototype.SetHome=CardSetHome;
-
-function CardGoHome(){
-	this.SetL(this.HomeL);
-	this.SetT(this.HomeT);
-}
-
-Card.prototype.GoHome=CardGoHome;
-
-//Fix for 6.2.5.2: avoid image dragging problem in draggable cards
-function CardSetHTML(HTML){
-	this.elm.innerHTML = HTML;
-	var DragImgs = this.elm.getElementsByTagName('img');
-	if (DragImgs.length > 0){
-		for (var i=0; i<DragImgs.length; i++){
-			DragImgs[i].addEventListener('onmousedown', function(e){return false;});
-		}
-	}
-}
-
-Card.prototype.SetHTML = CardSetHTML;
-
-var CurrDrag = -1;
-var topZ = 100;
 
 
-
-
-
-//JMIX DRAG-DROP OUTPUT FORMAT CODE
+//JMATCH-SPECIFIC CORE JAVASCRIPT CODE
 
 //Work around Safari bug
 var scrollable = true;
@@ -1083,351 +967,65 @@ var listener = function(e) {
     }
 }
 
-var Punctuation = '\u002E';
+document.addEventListener('touchmove', listener, { passive:false });
 
-var Openers = '';
-var CorrectResponse = 'Correct!';
-var IncorrectResponse = 'Sorry! Try again.';
-var ThisMuchCorrect = 'This much of your answer is correct:';
-var TheseAnswersToo = 'These answers are also correct:';
+var CorrectResponse = 'Correct! Well done.';
+var IncorrectResponse = 'Sorry! Try again. ';
 var YourScoreIs = '';
-var NextCorrect = 'The next correct part is: ';
 var FeedbackWidth = 200; //default
 var ExBGColor = getComputedStyle(document.documentElement).getPropertyValue('--strExBGColor');
 var PageBGColor = getComputedStyle(document.documentElement).getPropertyValue('--strPageBGColor');
 var TextColor = getComputedStyle(document.documentElement).getPropertyValue('--strTextColor');
 var TitleColor = getComputedStyle(document.documentElement).getPropertyValue('--strTitleColor');
-var DropTotal = 3; // number of lines that will be available for dropping on
-var Gap = 4; //Gap between two segments when they're next to each other on a line
-var DropHeight = 30;
-var CapitalizeFirst = false;
-var CompiledOutput = '';
-var TempSegment = '';
-var FirstSegment = -1;
-var FirstDiv = -1;
 var Penalties = 0;
 var Score = 0;
 var TimeOver = false;
-
-var CurrDrag = -1;
-var topZ = 100;
-//Cards and lines on which to drop them.
-var DC = new Array();
-var L = new Array();
-var Finished = false;
-
 var Locked = false;
+var ShuffleQs = false;
+var QsToShow = 0;
+var ResizeTimer = null;
+
+var LeftColPos = 100;
+var RightColPos = 500;
 var DragTop = 120;
-var DragNumber = -1;
+var Finished = false;
 var AnswersTried = '';
 
-Lines = new Array();
+//Fixed and draggable card arrays
+FC = new Array();
+DC = new Array();
 
-function CapFirst(InString){
-	var i = 0;
-	if ((Openers.indexOf(InString.charAt(i))>-1)||(InString.charAt(i) == ' ')){
-		i++;
-	}
-	if ((Openers.indexOf(InString.charAt(i))>-1)||(InString.charAt(i) == ' ')){
-		i++;
-	}
-	var Temp = InString.charAt(i);
-	Temp = Temp.toUpperCase();
-	InString = InString.substring(0, i) + Temp + InString.substring(i+1, InString.length);
-	return InString;
-}
+var DraggingCard = null;
+var moveFunc = function(e){e.preventDefault(); doDrag(e)};
+var endFunc = function(e){e.preventDefault(); endDrag(e)};
 
-function CheckResults(ChkType){
-//Get sequence student has chosen
-	GetGuessSequence();
-
-//Compile the answer
-	CompiledOutput = CompileString(GuessSequence);
-
-//Check the answer
-	CheckAnswer(ChkType);
-}
-
-function GetGuessSequence(){
-//Put pointers to draggables in arrays based on the lines they're sitting on
-	var Drops = new Array();
-	for (var i=0; i<L.length; i++){
-		Drops[i] = new Array();
-	}
-
-	var CardPos = 0;
-	
-	for (i=0; i<DC.length; i++){
-		for (var j=0; j<L.length; j++){
-//Slight modification for 6.0.4: allow some leeway for 1px inaccuracy in card placing by browser.
-			CardPos = L[j].GetB() - (DC[i].GetH()+2);
-			if (((DC[i].GetT() - CardPos) < 4)&&((DC[i].GetT() - CardPos) > -4)){
-				Drops[j][Drops[j].length] = DC[i];
-			}
-		}
-	}
-
-//Sort the drop arrays based on the Left of each div
-	for (i=0; i<Drops.length; i++){
-		Drops[i].sort(CompDrags);
-	}
-
-//Put the tags into the GuessSequence array
-	GuessSequence.length = 0;
-	for (i=0; i<Drops.length; i++){
-		for (j=0; j<Drops[i].length; j++){
-			GuessSequence[GuessSequence.length] = Drops[i][j].tag;
-		}
-	}
-
-//Set the variable recording which div is first
-	var NewFirstDiv = -1;
-	for (i=0; i<Drops.length; i++){
-		if (Drops[i].length > 0){
-			NewFirstDiv = Drops[i][0].index;
-			break;
-		}
-	}
-	return NewFirstDiv;
-}
-
-function CompDrags(a,b){
-	return a.GetL() - b.GetL(); 
-}
-
-function RestoreGuessSequence(){
-//TODO: This function will restore the sequence
-//of dropped items following a window resize, which
-//requires that everything be laid out again.
-	var LastTop   = 0;
-	var LastRight = 0;
-	var LastDrop  = 0;
-	var LastDropLine = document.getElementById('Drop0');
-	for (var i=0; i<GuessSequence.length; i++){
-		for (var j=0; j<DC.length; j++){
-			if (DC[j].tag == GuessSequence[i]){
-				if (i == 0){
-//It's the first card.			
-					DC[j].SetL(LastDropLine.offsetLeft);
-					DC[j].SetT(LastDropLine.offsetTop);	
-					LastTop = LastDropLine.offsetTop;
-					LastRight = DC[j].GetR();
-				}
-				else{
-					DC[j].SetT(LastTop);
-					DC[j].SetL(LastRight + 4);
-					LastRight = DC[j].GetR();
-					if (LastRight > (LastDropLine.offsetLeft + LastDropLine.offsetWidth)){
-						LastDrop++;
-						LastDropLine = document.getElementById('Drop' + LastDrop);
-						if (LastDropLine !== null){
-							DC[j].SetL(LastDropLine.offsetLeft);
-							DC[j].SetT(LastDropLine.offsetTop);
-							LastTop = DC[j].GetT();
-							LastRight = DC[j].GetR();
-						}
-					}
-				}
-			}
-		}
-	}
-	CheckOver(-1);
-}
-
-function FindSegment(SegID){
-	var Seg = '';
-	for (var i=0; i<Segments.length; i++){
-		if (Segments[i][1] == SegID){
-			Seg = Segments[i][0];
-			break;
-		}
-	}
-	return Seg;
-}
-
-function CompileString(InArray){
-	var OutString = '';
-	var i = 0;
-	OutArray = new Array();
-
-	for (i=0; i<InArray.length; i++){
-		OutArray[OutArray.length] = FindSegment(InArray[i]);
-	}
-
-	if (OutArray.length > 0){
-		OutString = OutArray[0];
+function beginDrag(e, Card){
+	scrollable = false;
+	DraggingCard = Card;
+	DraggingCard.Highlight();
+	window.addEventListener('mousemove',  moveFunc);
+	window.addEventListener('mouseup',    endFunc);
+	window.addEventListener('touchmove',  moveFunc);
+	window.addEventListener('touchend',   endFunc);
+	var currX, currY;
+	if (e.touches){
+		currX = e.touches[0].clientX;
+		currY = e.touches[0].clientY;
 	}
 	else{
-		OutString = '';
-	}
-	var Spacer = '';
-
-	for (i=1; i<OutArray.length; i++){
-		Spacer = ' ';
-		if ((Openers.indexOf(OutString.charAt(OutString.length-1)) > -1)||(Punctuation.indexOf(OutArray[i].charAt(0)) > -1)){
-			Spacer = '';
-		}
-		OutString = OutString + Spacer + OutArray[i];		
+		currX = e.clientX;
+		currY = e.clientY; 
 	}
 
-//Capitalize the first letter if necessary
-	if (CapitalizeFirst == true){
-		OutString = CapFirst(OutString);
-	}
-	return OutString;
-}
-
-function CheckAnswer(CheckType){
-	if (Locked == true){return;}
-	if (GuessSequence.length < 1){
-		if (CheckType == 1){
-			Penalties++;
-			ShowMessage(NextCorrect + '<br /><br />' + FindSegment(Answers[0][0]));
-		}
-		return;
-	}
-	var i = 0;
-	var j = 0;
-	var k = 0;
-	var WellDone = '';
-	var WhichCorrect = -1;
-	var TryAgain = '';
-	var LongestCorrectBit = '';
-	TempCorrect = new Array();
-	LongestCorrect = new Array();
-	var TempHint = '';
-	var HintToReturn = 1;
-	var OtherAnswers = '';
-	var AllDone = false;
-
-	for (i=0; i<Answers.length; i++){
-		TempCorrect.length = 0;
-		for (j=0; j<Answers[i].length; j++){
-			if (Answers[i][j] == GuessSequence[j]){
-				TempCorrect[j] = GuessSequence[j];
-			}
-			else{
-				TempHint = Answers[i][j];
-				break;
-			}
-		}
-		if ((TempCorrect.length == GuessSequence.length)&&(TempCorrect.length == Answers[i].length)){
-			WhichCorrect = i;
-			break;
-		}
-		else{
-			if (TempCorrect.length > LongestCorrect.length){
-				LongestCorrect.length = 0;
-				for (k=0; k<TempCorrect.length; k++){
-					LongestCorrect[k] = TempCorrect[k];
-				}
-				HintToReturn = TempHint;
-			} 
-		}	
-	}
-	if (WhichCorrect > -1){
-		AllDone = true;
-		for (i=0; i<Answers.length; i++){
-			if (i!=WhichCorrect){
-				OtherAnswers += '<br />' + CompileString(Answers[i]);
-			}
-		}
-		WellDone = '<span class="CorrectAnswer">' + CompiledOutput + '</span><br /><br />' + CorrectResponse + '<br />';
-		
-		if (AnswersTried.length > 0){AnswersTried += ' | ';}
-		AnswersTried += CompiledOutput;
-
-//Do score calculation here
-		Score = Math.floor(((Segments.length-Penalties) * 100)/Segments.length);
-		WellDone += YourScoreIs + ' ' + Score + '%.<br />';
-
-
-		if (OtherAnswers.length > 0){
-			WellDone += TheseAnswersToo + '<span class="CorrectAnswer">' + OtherAnswers + '</span>';
-		}
-
-
-		ShowMessage(WellDone);
-		WriteToInstructions(YourScoreIs + ' ' + Score + '%.');
-	}
-
-	else{
-		var WrongGuess = CompileString(GuessSequence);
-		if (AnswersTried.length > 0){AnswersTried += ' | ';}
-		AnswersTried += WrongGuess;
-		TryAgain = '<span class="Guess">' + WrongGuess + '</span><br /><br />';
-		if ((CheckType == 0)||(LongestCorrect.length==0)){
-			TryAgain += IncorrectResponse + '<br />';
-		}
-
-		if (LongestCorrect.length > 0){
-			LongestCorrectBit = CompileString(LongestCorrect);
-			GuessSequence.length = LongestCorrect.length;
-			TryAgain += '<br />' + ThisMuchCorrect + '<br /><span class="Guess">' + LongestCorrectBit + '</span><br />';
-		}
-
-		if (CheckType == 1){
-			TryAgain += '<br />' + NextCorrect + '<br />' + FindSegment(HintToReturn);
-		}
-		
-
-		Penalties++; //Penalty for inaccurate check
-		ShowMessage(TryAgain);
-	}
-	
-//If the exercise is over, deal with that
-	if ((AllDone == true)||(TimeOver == true)){
-
-
-		TimeOver = true;
-		Locked = true;
-		Finished = true;
-		WriteToInstructions(YourScoreIs + ' ' + Score + '%.'); 
-	}
-	
-
-}
-
-
-var Segments = new Array();
-Segments[0] = new Array();
-Segments[0][0] = '\u0C1A\u0C3F\u0C28\u0C4D\u0C28\u0C2A\u0C4D\u0C2A\u0C41\u0C21\u0C41';
-Segments[0][1] = 2;
-Segments[0][2] = 0;
-Segments[1] = new Array();
-Segments[1][0] = '\u0C35\u0C3E\u0C33\u0C4D\u0C33\u0C2E\u0C41';
-Segments[1][1] = 6;
-Segments[1][2] = 0;
-Segments[2] = new Array();
-Segments[2][0] = '\u0C35\u0C4D\u0C30\u0C3E\u0C38\u0C47';
-Segments[2][1] = 5;
-Segments[2][2] = 0;
-Segments[3] = new Array();
-Segments[3][0] = '\u0C2E\u0C40\u0C26\u0C3E';
-Segments[3][1] = 4;
-Segments[3][2] = 0;
-Segments[4] = new Array();
-Segments[4][0] = '\u0C2E\u0C47\u0C2E\u0C41';
-Segments[4][1] = 1;
-Segments[4][2] = 0;
-Segments[5] = new Array();
-Segments[5][0] = '\u0C2A\u0C3E\u0C32\u0C15';
-Segments[5][1] = 3;
-Segments[5][2] = 0;
-Segments[6] = new Array();
-Segments[6][0] = '\u002E';
-Segments[6][1] = 7;
-Segments[6][2] = 0;
-
-
-var GuessSequence = new Array();
-
-var Answers = new Array();
-Answers[0] = new Array(1,2,3,4,5,6,7);
+	topZ++;
+	DraggingCard.style.zIndex = topZ;
+	window.lastX = currX; 
+	window.lastY = currY;
+	return false;  
+} 
 
 
 function doDrag(e) {
-	if (CurrDrag == -1) {return};
 	var currX, currY;
 	var difX, difY;
 	if (e.touches){
@@ -1441,288 +1039,258 @@ function doDrag(e) {
 	
 	difX = currX - window.lastX; 
 	difY = currY - window.lastY;
-	var newX = DC[CurrDrag].GetL()+difX; 
-	var newY = DC[CurrDrag].GetT()+difY; 
-	DC[CurrDrag].SetL(newX); 
-	DC[CurrDrag].SetT(newY);
+	DraggingCard.style.left = DraggingCard.GetL() + difX + 'px'; 
+	DraggingCard.style.top  = DraggingCard.GetT() + difY + 'px'; 
 	window.lastX = currX; 
 	window.lastY = currY; 
 	return false;
 } 
 
-var moveFunc = function(e){e.preventDefault(); doDrag(e);};
-var endFunc = function(e){e.preventDefault(); endDrag(e);};
-
-function beginDrag(e, DragNum) { 
-	scrollable = false;
-	CurrDrag = DragNum;
-
-	window.addEventListener('mousemove', moveFunc);
-	window.addEventListener('mouseup', endFunc);
-	window.addEventListener('touchmove', moveFunc);
-	window.addEventListener('touchend', endFunc);
-
-	var currX, currY;
-	if (e.touches){
-		currX = e.touches[0].clientX;
-		currY = e.touches[0].clientY;
-	}
-	else{
-		currX = e.clientX;
-		currY = e.clientY; 
-	}
-
-	DC[CurrDrag].Highlight();
-	topZ++;
-	DC[CurrDrag].css.zIndex = topZ;
-	window.lastX = currX; 
-	window.lastY = currY;
-	return false;  
-}  
-
 function endDrag(e) { 
-	if (CurrDrag == -1) {return};
-	DC[CurrDrag].Unhighlight();
+	DraggingCard.Unhighlight();
 	window.removeEventListener('mousemove', moveFunc);
 	window.removeEventListener('touchmove', moveFunc);
 	window.removeEventListener('mouseup', endFunc);
 	window.removeEventListener('touchend', endFunc);
-	onEndDrag();	
-	CurrDrag = -1;
+	onEndDrag();
 	scrollable = true;
 	return true;
 } 
 
-function onEndDrag(){
-//Snap to lines
-	var i = 0;
-	var SnapLine = DC[CurrDrag].GetT();
-	var BiggestOverlap = -1;
-	var OverlapRect = 0;
-	for (i=0; i<L.length; i++){
-		if (DC[CurrDrag].Overlap(L[i]) > OverlapRect){
-			OverlapRect = DC[CurrDrag].Overlap(L[i]);
-			BiggestOverlap = i;
-		}
-	}
-	if (BiggestOverlap > -1){
-		SnapLine = L[BiggestOverlap].GetB() - (DC[CurrDrag].GetH() + 2);
-		DC[CurrDrag].SetT(SnapLine);
-		CheckOver(-1);
-	}
-	if (CapitalizeFirst==true){
-		setTimeout('DoCapitalization()', 50);
-	}
-//Get the guess sequence every time so we can restore it
-//if the page is resized.
-	GetGuessSequence();
-}
+function onEndDrag(){ 
+	DraggingOrigPos = parseInt(DraggingCard.getAttribute('id').substring(2));
+	DragEx.HandleDrop(DraggingOrigPos);
+	DraggingCard = null;
+} 
 
-function DoCapitalization(){
-//Capitalize first segment if necessary
-	var FD = GetGuessSequence();
-	if ((FD == -1)&&(FirstDiv > -1)){
-		DC[FirstDiv].SetHTML(Segments[FirstDiv][0]);
-	}
-	if (((FD != FirstDiv)&&(CapitalizeFirst == true))&&(FD > -1)){
-		if (FirstDiv > -1){
-			DC[FirstDiv].SetHTML(Segments[FirstDiv][0]);
-		}
-	}
-	if ((FD > -1)&&(CapitalizeFirst == true)){
-		var Temp = CapFirst(Segments[FD][0]);
-		DC[FD].SetHTML(Temp);
-		FirstDiv = FD;
-	}
+//Utility functions for dimensions of elements.
+var GetL = function(){
+	return this.offsetLeft;
 }
+var GetR = function(){
+	return this.offsetLeft + this.offsetWidth;
+}
+var GetT = function(){
+	return this.offsetTop;
+}
+var GetB = function(){
+	return this.offsetTop + this.offsetHeight;
+}
+var GetH = function(){
+	return this.offsetHeight;
+}
+var GetW = function(){
+	return this.offsetWidth;
+}
+var Highlight = function(){
+	this.style.backgroundColor = TextColor;
+	this.style.color = ExBGColor;
+};
+var Unhighlight = function(){
+	this.style.backgroundColor = ExBGColor;
+	this.style.color = TextColor;
+};
+var GetOverlap = function(OtherCard){
+	var smR=(this.GetR() < OtherCard.GetR())? this.GetR(): OtherCard.GetR();
+	var lgL=(this.GetL() > OtherCard.GetL())? this.GetL(): OtherCard.GetL();
+	var HDim=smR-lgL;
+	if (HDim<1){return 0;}
+	var smB=(this.GetB() < OtherCard.GetB())? this.GetB(): OtherCard.GetB();
+	var lgT=(this.GetT() > OtherCard.GetT())? this.GetT(): OtherCard.GetT();
+	var VDim=smB-lgT;
+	if (VDim<1){return 0;}
+	return (HDim*VDim);	
+};
 
-function CheckOver(NoMove){
-//This recursive function spreads out the Cards on a line if two of them are overlapping;
-//if the spread operation moves one beyond the end of a line, it wraps it to the next line.
-	var LeftBoundary = L[0].elm.offsetLeft;
-	var LineWidth = L[0].elm.offsetWidth;
-	for (var i=0; i<DC.length; i++){
-		for (var j=0; j<DC.length; j++){
-			if (i!=j){
-				if (DC[i].Overlap(DC[j]) > 0){
-					if ((i==NoMove)||(DC[i].GetL() < DC[j].GetL())){
-						DC[j].DockToR(DC[i]);
-						if (DC[j].GetR() > (LeftBoundary + LineWidth)){
-							DC[j].SetL(LeftBoundary);
-							DC[j].SetT(DC[j].GetT() + DropHeight);
-						}
-						CheckOver(j);
-					}
-					else{
-						DC[i].DockToR(DC[j]);
-						if (DC[i].GetR() > (LeftBoundary + LineWidth)){
-							DC[i].SetL(LeftBoundary);
-							DC[i].SetT(DC[i].GetT() + DropHeight);
-						}
-						CheckOver(i);	
-					}
+/*
+  The new V7 DragEx object replaces the arrays of old.
+*/
+var V7JsonEx = '{  "ShuffleLeftItems": false,  "IsSimple": true,  "ItemsToShow": -1,  "LeftItems": [{"OrigPos": 0,     "Group": 0}, {"OrigPos": 1,     "Group": 1}, {"OrigPos": 2,     "Group": 2}, {"OrigPos": 3,     "Group": 3}, {"OrigPos": 4,     "Group": 4}],  "RightItems": [{"OrigPos": 0,     "Groups": [0], "MatchedWith": -1}, {"OrigPos": 1,     "Groups": [1], "MatchedWith": -1}, {"OrigPos": 2,     "Groups": [2], "MatchedWith": -1}, {"OrigPos": 3,     "Groups": [3], "MatchedWith": -1}, {"OrigPos": 4,     "Groups": [4], "MatchedWith": -1}]}';
+
+var DragEx = JSON.parse(V7JsonEx);
+
+//Methods for the object.
+DragEx.Setup = function(){
+	var i;
+	
+
+
+
+
+
+
+//Add custom functions to all the cards.
+	document.querySelectorAll('div.CardStyle').forEach(function(div){
+		div.Highlight = Highlight.bind(div);
+		div.Unhighlight = Unhighlight.bind(div);
+		div.GetL = GetL.bind(div);
+		div.GetT = GetT.bind(div);
+		div.GetR = GetR.bind(div);
+		div.GetB = GetB.bind(div);
+		div.GetH = GetH.bind(div);
+		div.GetW = GetW.bind(div);
+		div.GetOverlap = GetOverlap.bind(div);
+	}.bind(this));
+	
+//Connect each of the items to its card.
+	this.LeftItems.forEach(function(LI){
+		LI.Card = document.getElementById('L_' + LI.OrigPos);
+	}.bind(this));
+	this.RightItems.forEach(function(RI){
+		RI.Card = document.getElementById('R_' + RI.OrigPos);
+		RI.Card.addEventListener('mousedown',  (function(e){beginDrag(e, this)}.bind(RI.Card)));
+		RI.Card.addEventListener('touchstart', (function(e){beginDrag(e, this)}.bind(RI.Card)));
+		RI.Card.style.cursor = 'grab';
+	}.bind(this));
+//Reduce the items as required. Sanity check: don't allow less than 2.
+	if (this.ItemsToShow > 2){
+		while (this.LeftItems.length > this.ItemsToShow){
+			RemItem = Math.floor(this.LeftItems.length*Math.random());
+			OP = this.LeftItems[RemItem].OrigPos;
+			this.LeftItems[RemItem].Card.parentNode.removeChild(this.LeftItems[RemItem].Card);
+			this.LeftItems.splice([RemItem], 1);
+
+//Having removed an item from the left, we must remove the corresponding 
+//one from the right if it exists. (There may not be a matching item if 
+//the one removed was a distractor.)
+			for (i = 0; i < this.RightItems.length; i++){
+				if (this.RightItems[i].OrigPos == OP){
+					this.RightItems[i].Card.parentNode.removeChild(this.RightItems[i].Card);
+					this.RightItems.splice(i, 1);
 				}
-			}	
+			}
 		}
 	}
-}
-
-function StartUp(){
-
-
-
-
-
-
-
-//Create the drop lines and cards.
-	var ExDiv = document.querySelector('div.ExerciseContainer');
+//Now do any shuffling that's required.
+	if (this.ShuffleLeftItems == true){
+		this.LeftItems = Shuffle(this.LeftItems);
+	}
+	this.RightItems = Shuffle(this.RightItems);
 	
-	var newLine = null;
-	var newCard = null;
-    for (var i=0; i<DropTotal; i++){
-		newLine = document.createElement('div');
-		newLine.setAttribute('id', 'Drop' + i);
-		newLine.setAttribute('class', 'DropLine');
-		newLine.appendChild(document.createElement('br'));
-		newLine.appendChild(document.createElement('br'));
-		ExDiv.appendChild(newLine);
+	this.SetInitialPositions(true);
+	
+//Fix to avoid image dragging problem in cards with images.
+	var DragImgs = document.querySelectorAll('div.CardStyle img');
+	for (i = 0; i<DragImgs.length; i++){
+		DragImgs[i]. onmousedown = function(){return false;}
 	}
 
-	for (var i=0; i<Segments.length; i++){
-		newCard = document.createElement('div');
-		newCard.setAttribute('id', 'D' + i);
-		newCard.setAttribute('dataNum', i);
-		newCard.setAttribute('class', 'CardStyle');
-		ExDiv.appendChild(newCard);
-		newCard.addEventListener('mousedown', function(e){beginDrag(e, this.getAttribute('dataNum'))}.bind(newCard));
-		newCard.addEventListener('touchstart', function(e){beginDrag(e, this.getAttribute('dataNum'))}.bind(newCard));
-	}
+//We use a timeout here to allow card positions to be established
+//before they're used for sliding matched cards.
+	window.addEventListener('resize', function(e){
+		clearTimeout(ResizeTimer);
+		ResizeTimer = setTimeout(function(){DragEx.SetInitialPositions(false)}, 250);
+	});
 
-	Segments = Shuffle(Segments);
-
-//Place them at the bottom of the page
-	SetInitialPositions();
 	
-//Allow for resizing
-	window.addEventListener('resize', function(){SetInitialPositions()});
 
+};
 
-}
+DragEx.GetLeftItemByOrigPos = function(Pos){
+	for (var i=0; i<this.LeftItems.length; i++){
+		if (this.LeftItems[i].OrigPos === Pos){
+			return this.LeftItems[i];
+		}
+	}
+	return null;
+};
 
-function SetInitialPositions(){
-//This function lays out all the elements that are
-//positioned absolutely. It may be called every time
-//the page is resized.
+DragEx.GetRightItemByOrigPos = function(Pos){
+	for (var i=0; i<this.RightItems.length; i++){
+		if (this.RightItems[i].OrigPos === Pos){
+			return this.RightItems[i];
+		}
+	}
+	return null;
+};
 
-	DragTop = parseInt(document.getElementById('CheckButtonDiv').offsetHeight) + parseInt(document.getElementById('CheckButtonDiv').offsetTop) + 10;
+DragEx.SendHome = function(ROrigPos){
+	Slide(ROrigPos, this.GetRightItemByOrigPos(ROrigPos).Home);
+};
 
+DragEx.SetInitialPositions = function(slide){
+	
 	var ExDiv = document.querySelector('div.ExerciseContainer');
-
+	
 //Get the default font size.
 	var FontSize = Math.round(parseFloat(getComputedStyle(ExDiv).fontSize));
 	
+//Get the value of any drop-shadow on the cards so we can allow for it in layout.
+	var DS =  window.getComputedStyle(this.LeftItems[0].Card).getPropertyValue('box-shadow').split('px ');
+	var DSOffset = 5;
+	if ((DS.length > 1)&&(!(Number.isNaN(parseFloat(DS[1]))))){
+		DSOffset += Math.abs(Math.ceil(parseFloat(DS[1])));
+	}
+	
+//Calculate container dimensions and positions
+	DragTop = parseInt(document.getElementById('CheckButtonDiv').offsetHeight) + parseInt(document.getElementById('CheckButtonDiv').offsetTop) + DSOffset;
+	
 	var ExDivLeft = ExDiv.offsetLeft;
-	var ExDivWidth = ExDiv.offsetWidth;
-	var Indent = Math.floor(ExDivWidth / 20);
-	var DropLineWidth = Math.floor((ExDivWidth * 9) / 10);
+	var ExDivWidth = ExDiv.offsetWidth;	
+	var Indent = Math.min(Math.floor(ExDivWidth / 20), FontSize);
+	var DragWidth = Math.floor(ExDivWidth / 4);
+	LeftColPos = ExDivLeft + Indent;
 
-	var CurrTop = DragTop + 10;
-
-//Position the drop divs
-	for (var i=0; i<DropTotal; i++){
-		L[i] = new Card('Drop' + i, 0);
-		L[i].SetT(CurrTop)
-		L[i].tag = CurrTop-5;
-		L[i].SetL(ExDivLeft + Indent);
-		L[i].SetW(DropLineWidth);
-		L[i].css.backgroundColor = PageBGColor;
-		CurrTop += L[i].GetH();
-		topZ++;
-		L[i].css.zIndex = topZ;
+//Calculate the width for the left items.	
+	var WidestLeft = 0;
+	for (var i=0; i<this.LeftItems.length; i++){
+		var CurrCard = this.LeftItems[i].Card;
+		CurrCard.style.width = '';
+		CurrCard.style.height = '';
+		var w = CurrCard.GetW() + 10;
+		if (w > WidestLeft){
+			WidestLeft = w;
+		}
 	}
-	DropHeight = L[0].GetH();
+	if (WidestLeft > DragWidth){WidestLeft = DragWidth;}
 
+//Calculate the width for the right items.
+	DragWidth = Math.floor((ExDivWidth-WidestLeft)/2) - 24;
+	RightColPos = ExDivWidth + LeftColPos - (DragWidth + 14 + Indent);
+	var Highest = 0;
+	var WidestRight = 0;
+
+	for (i=0; i<this.RightItems.length; i++){
+		var CurrCard = this.RightItems[i].Card;
+		CurrCard.style.width = '';
+		CurrCard.style.height = '';
+		if (CurrCard.GetW() > DragWidth){CurrCard.style.width = DragWidth + 'px';}
+		if (CurrCard.GetH() > Highest){Highest = CurrCard.GetH();}
+		if (CurrCard.GetW() > WidestRight){WidestRight = CurrCard.GetW();}
+	}
+
+//Size and position the right items.		
+	var CurrTop = DragTop;
+	
+	for (i=0; i<this.RightItems.length; i++){
+		var CurrCard = this.RightItems[i].Card;
+		CurrCard.style.top = CurrTop + 'px';
+		CurrCard.style.left = RightColPos + 'px';
+		CurrCard.style.height = Highest + 'px';
+		CurrCard.style.width = (WidestRight + 10) + 'px';
+		this.RightItems[i].Home = [RightColPos, CurrTop];
+		CurrTop = CurrTop + CurrCard.GetH() + DSOffset;
+	}
+
+//Size and position the left items.
 	CurrTop = DragTop;
-	var TempInt = 0;
-	var DropHome = 0;
 
-	for (i=0; i<Segments.length; i++){
-//Create a new pointer in the C array to ref the card div
-		DC[i] = new Card('D'+i, 0);
-		DC[i].elm.classList.add('CardStyleCentered');
-		DC[i].SetHTML(Segments[i][0]);
-		DC[i].SetT(CurrTop);
-		DC[i].SetL(-100);
-		DC[i].css.cursor = 'move';
-		TempInt = DC[i].GetH();
-		CurrTop = CurrTop + TempInt + 5;
-		DC[i].css.backgroundColor = ExBGColor;
-		DC[i].css.color = TextColor;
-		topZ++;
-		DC[i].css.zIndex = topZ;
-		DC[i].tag = Segments[i][1];
-		DC[i].index = i;
+	for (var i=0; i<this.LeftItems.length; i++){
+		var CurrCard = this.LeftItems[i].Card;
+		CurrCard.style.width = WidestLeft + 'px';
+		if (CurrCard.GetH() < Highest){CurrCard.style.height = Highest + 'px';}
+		CurrCard.style.top = CurrTop + 'px';
+		CurrCard.style.left = LeftColPos + 'px';
+		CurrTop = CurrTop + CurrCard.GetH() + DSOffset;
 	}
 
-//Places all the divs at the bottom of the exercise div in centred rows
-//First, get the vertical position of the first row
-	var RTop = L[L.length-1].GetB() + 10;
-
-//Create an array to hold the numbers of Cards for each row
-	CRows = new Array();
-	CRows[0] = new Array();
-	Widths = new Array();
-	var i=0;
-	var r=0;
-	var RowWidth=0;
-//Sort the Cards into rows, storing their numbers in the array
-
-	while (i<DC.length){
-//if it fits on this row, add it
-		if ((RowWidth + DC[i].GetW() + 5) < DropLineWidth){
-			CRows[r][CRows[r].length] = i;
-			RowWidth += DC[i].GetW() + 5;
-//Store the width in the Widths array for later
-			Widths[r] = RowWidth;
-		}
-//if not, increment the row number, and add it to the next row
-		else{
-			r++;
-			CRows[r] = new Array();
-			CRows[r][CRows[r].length] = i;
-			RowWidth = DC[i].GetW() + 5;
-//Store the width in the Widths array for later
-			Widths[r] = RowWidth;
-		}
-//move to the next Card
-		i++;
-	}
-//Now we have the numbers in rows, set out each row
-	r=0;
-	
-	for (r=0; r<CRows.length; r++){
-//Get the required extra indent for this row
-		ExtraIndent = Math.floor((DropLineWidth-Widths[r])/2);
-		
-//Set the first card in position
-		DC[CRows[r][0]].SetL(ExDivLeft + Indent + ExtraIndent);
-		DC[CRows[r][0]].SetT(RTop);
-		DC[CRows[r][0]].SetHome();
-		for (i=1; i<CRows[r].length; i++){
-			DC[CRows[r][i]].DockToR(DC[CRows[r][i-1]]);
-			DC[CRows[r][i]].SetHome();
-		}
-//Increment the row height
-		RTop += DC[0].GetH() + 5;
-	}
-	
-//Now we clone the top navbar to create a bottom
+//Now we clone the top navbar to create a bottom	
 //navbar, and position it.
 	var TopNav = document.getElementById('TopNavBar');
 	var ReadingDiv = document.getElementById('ReadingDiv');
 	
 	if (TopNav !== null){
+
 //First delete one if there is one.
 		var BottomNav = document.getElementById('BottomNavBar');
 		if (BottomNav === null){
@@ -1731,21 +1299,205 @@ function SetInitialPositions(){
 			BottomNav.style.position = 'absolute';
 			document.body.appendChild(BottomNav);
 		}
-		var LastCard = DC[CRows[CRows.length - 1][0]].elm;
-		var ReadingBottom = (ReadingDiv !== null)? ReadingDiv.offsetTop + ReadingDiv.offsetHeight : 0;
-		var LastCardBottom = LastCard.offsetTop + LastCard.offsetHeight;
-		BottomNav.style.top = (Math.max(ReadingBottom, LastCardBottom) + FontSize) + 'px';
+		var LowestLeft = this.LeftItems[this.LeftItems.length - 1].Card.GetB();
+		var LowestRight = this.RightItems[this.RightItems.length - 1].Card.GetB();
+		var ReadingBottom = (ReadingDiv)? ReadingDiv.offsetTop + ReadingDiv.offsetHeight : 0;
+		BottomNav.style.top = (Math.max(ReadingBottom, LowestLeft, LowestRight) + FontSize) + 'px' ;
 		BottomNav.style.width = document.getElementById('TopNavBar').offsetWidth + 'px';
 	}
-//Finally we restore any existing guess sequence, in case
-//this function has been triggered by a window resize.
-	RestoreGuessSequence();
+	
+//Now slide any already-matched items into position.
+	this.RightItems.forEach(function(RI){
+		if (RI.MatchedWith > -1){
+			var TargPoint = this.GetDockPoint(RI.MatchedWith, RI.Card);
+			if (RI.MarkedWrong == true){
+				RI.Card.Highlight();
+				TargPoint[0] = TargPoint[0] + 10;
+			}
+			if (slide == true){
+				Slide(RI.OrigPos, TargPoint);
+			}
+			else{
+				RI.Card.style.left = TargPoint[0] + 'px';
+				RI.Card.style.top  = TargPoint[1] + 'px'; 
+			}
+		}
+	}.bind(this));
+};
 
+DragEx.GetDockPoint = function(LeftOrigPos, RightCard){
+	var TargL, TargT;
+	var LeftItem = this.GetLeftItemByOrigPos(LeftOrigPos);
+	if (LeftItem !== null){
+		var LeftCard = LeftItem.Card;
+		TargL = LeftCard.GetR() + 5;
+		TargT = (LeftCard.GetT() + Math.floor((LeftCard.GetH() - RightCard.GetH()) / 2));
+		return [TargL, TargT];
+	}
+	else{
+		return [0,0];
+	}
+}
+
+DragEx.HandleDrop = function(ROrigPos){
+	var RI = this.GetRightItemByOrigPos(ROrigPos);
+	RI.MarkedWrong = false;
+	RI.MatchedWith = -1;
+	RI.Card.Unhighlight();
+	var Overlap = 0;
+	var MatchedWith = -1;
+	var i;
+	this.LeftItems.forEach(function(LI){
+		var OL = RI.Card.GetOverlap(LI.Card);
+//Check whether it overlaps a card, or is in exact docking position with it.
+		var DP = this.GetDockPoint(LI.OrigPos, RI.Card);
+		if ((OL > Overlap)||((RI.Card.GetL() == DP[0])&&(RI.Card.GetT() == DP[1]))){
+			Overlap = OL;
+			MatchedWith = LI.OrigPos;
+		}
+	}.bind(this));
+	if (MatchedWith > -1){
+		RI.MatchedWith = MatchedWith;
+		TargPoint = this.GetDockPoint(MatchedWith, RI.Card);
+		Slide(ROrigPos, TargPoint);
+		this.RightItems.forEach(function(RI2){
+			if ((RI2.OrigPos !== RI.OrigPos)&&(RI2.MatchedWith == MatchedWith)){
+				RI2.MatchedWith = -1;
+				RI2.Card.Unhighlight();
+				this.SendHome(RI2.OrigPos);
+				RI2.MarkedWrong = false;
+			}
+		}.bind(this));
+	}
+	else{
+		this.SendHome(ROrigPos);
+	}
+}
+
+//This function checks answers and calculates the 
+//current score, then returns true for "finished" or
+//false for "not yet finished". The object's Score
+//property can then be read.
+DragEx.CheckAnswers = function(){
+/*
+	Check each right item to see whether a) it had an 
+	original match on the left, and b) it is matched
+	to a left item whose group is one of its groups.
+*/
+	if (!this.hasOwnProperty('Penalties')){
+		this.Penalties = 0;
+	}
+	var ItemsToCount = 0;
+	var CorrectItems = 0;
+	var Done = true; //Assume till proven otherwise.
+	
+//Tot up the scores.
+	this.RightItems.forEach(function(RI){
+//Only use it if there is a match for it.
+		if (this.GetLeftItemByOrigPos(RI.OrigPos) !== null){
+			ItemsToCount++;
+			if (RI.MatchedWith !== -1){
+				var LI = this.GetLeftItemByOrigPos(RI.MatchedWith);
+				if (RI.Groups.indexOf(LI.Group) > -1){
+					CorrectItems++;
+				}
+				else{
+					Done = false;
+					RI.Card.Highlight();
+					RI.MarkedWrong = true;
+					RI.Card.style.left = (RI.Card.GetL() + 10) + 'px';
+				}
+			}
+			else{
+				Done = false;
+			}
+		}
+		else{
+//It's a distractor and shouldn't be matched. Deduct one from score.
+			if (RI.MatchedWith !== -1){
+				Done = false;
+				RI.Card.Highlight();
+				RI.Card.style.left = (RI.Card.GetL() + 10) + 'px';
+				RI.MarkedWrong = true;
+				CorrectItems--;
+			}
+		}
+	}.bind(this));
+	if (!this.hasOwnProperty('Score')){
+		this.Score = 0;
+	}
+	this.Score = Math.round((100*(CorrectItems - this.Penalties))/ItemsToCount);
+	if (Done === false){
+		this.Penalties++;
+	}
+	return Done;
+};
+
+function Slide(ROrigPos, TargPoint){
+	var Card = DragEx.GetRightItemByOrigPos(ROrigPos).Card;
+	if (Math.abs(Card.GetL() - TargPoint[0]) <= 5){
+		Card.style.left = TargPoint[0] + 'px';
+	}
+	else{
+		var LeftShift = Card.GetL() < TargPoint[0]? 5: -5;
+		Card.style.left = Card.GetL() + LeftShift + 'px';
+	}
+	if (Card.GetT() !== TargPoint[1]){
+		if (Math.abs(Card.GetT() - TargPoint[1]) <= 5){
+			Card.style.top = TargPoint[1] + 'px';
+		}
+		else{
+			var TopShift = Card.GetT() < TargPoint[1]? 5: -5;
+			Card.style.top = Card.GetT() + TopShift + 'px';
+		}
+	}
+	if ((Card.GetL() != TargPoint[0])||(Card.GetT() != TargPoint[1])){
+		setTimeout('Slide(' + ROrigPos + ', [' + TargPoint[0] + ',' + TargPoint[1] + '])', 1);
+	}
 }
 
 function TimerStartUp(){
-	setTimeout('StartUp()', 300);
+	setTimeout('DragEx.Setup()', 300);
 }
+
+function CheckAnswers(){
+	if (Locked == true){return;}
+	
+	var Feedback = '';
+
+	var AllDone = DragEx.CheckAnswers();
+	Score = DragEx.Score;
+	if (Score < 0){Score = 0;}
+
+	if (AllDone == true){
+		Feedback = YourScoreIs + ' ' + Score + '%.<br/>' + CorrectResponse;
+	}
+	else {
+		if (TimeOver == true){
+			Feedback = YourScoreIs + ' ' + Score + '%.'
+		}
+		else{
+			Feedback = YourScoreIs + ' ' + Score + '%.' + '<br />' + IncorrectResponse;
+		}
+	}
+	ShowMessage(Feedback);
+	
+//If the exercise is over, deal with that
+	if ((AllDone == true)||(TimeOver == true)){
+
+
+		TimeOver = true;
+		Locked = true;
+		Finished = true;
+		WriteToInstructions(Feedback);
+	}
+
+	
+//The window layout may be affected by the feedback, so 
+//put the cards in place again.
+	DragEx.SetInitialPositions(false);
+}
+
 
 
 
@@ -1787,16 +1539,16 @@ function TimerStartUp(){
 <!-- EndTopNavButtons -->
 
 <div class="Titles">
-	<h2 class="ExerciseTitle"></h2>
+	<h2 class="ExerciseTitle">Match the words with their meanings.</h2>
 
-	<h3 class="ExerciseSubtitle">Put the words in order and make a meaningful sentence.</h3>
+	<h3 class="ExerciseSubtitle">Matching exercise</h3>
 
 
 
 </div>
 
 <div id="InstructionsDiv" class="StdDiv">
-	<div id="Instructions">Put the parts in order to form a sentence. When you think your answer is correct, click on "Check" to check your answer. If you get stuck, click on "Hint" to find out the next correct part.</div>
+	<div id="Instructions">Match the items on the right to the items on the left.</div>
 </div>
 
 
@@ -1804,22 +1556,14 @@ function TimerStartUp(){
 
 
 
-<div class="ExerciseContainer JMixDrag">
+<div class="ExerciseContainer JMatchDrag">
 
-<div id="CheckButtonDiv" class="StdDiv">
-<button id="CheckButton1" class="FuncButton" onclick="CheckResults(0)">&#160;Check&#160;</button>
-
-
-<button class="FuncButton" onclick="location.reload()">&#160;Restart&#160;</button>
-
-
-
-<button class="FuncButton" onclick="CheckResults(1)">&#160;Hint&#160;</button>
-
+<div class="StdDiv" id="CheckButtonDiv">
+<button id="CheckButton1" class="FuncButton" onclick="CheckAnswers()">&#160;Check&#160;</button>
 </div>
 
-</div>
 
+</div>
 </div>
 
 <div class="Feedback" id="FeedbackDiv">
@@ -1834,6 +1578,18 @@ function TimerStartUp(){
 <!-- BeginSubmissionForm -->
 
 <!-- EndSubmissionForm -->
+
+<div id="L_0" class="CardStyle">&#x0C2A;&#x0C32;&#x0C15;</div>
+<div id="L_1" class="CardStyle">&#x0C2C;&#x0C02;&#x0C21;&#x0C3F;</div>
+<div id="L_2" class="CardStyle">&#x0C2D;&#x0C35;&#x0C28;&#x0C2E;&#x0C41;</div>
+<div id="L_3" class="CardStyle">&#x0C2B;&#x0C32;&#x0C2E;&#x0C41;</div>
+<div id="L_4" class="CardStyle">&#x0C2E;&#x0C02;&#x0C1A;&#x0C2E;&#x0C41;</div>
+<div id="R_0" class="CardStyle">slate</div>
+<div id="R_1" class="CardStyle">vehicle</div>
+<div id="R_2" class="CardStyle">building</div>
+<div id="R_3" class="CardStyle">fruits</div>
+<div id="R_4" class="CardStyle">bed</div>
+
 
 </body>
 </html>
